@@ -1,6 +1,9 @@
 package types
 
-import "errors"
+import (
+	"errors"
+	"math"
+)
 
 type uint6 uint8 // shhh...
 
@@ -8,6 +11,17 @@ type Color struct {
 	R uint6
 	G uint6
 	B uint6
+}
+
+func ColorLerp(color1, color2 Color, t float64) Color {
+	color1.R = uint6(math.Round(Lerp(float64(color1.R), float64(color2.R), t)))
+	color1.G = uint6(math.Round(Lerp(float64(color1.G), float64(color2.G), t)))
+	color1.B = uint6(math.Round(Lerp(float64(color1.B), float64(color2.B), t)))
+	return color1
+}
+
+type Gradient struct {
+	Colors []PaletteIndex
 }
 
 type PaletteIndex uint8

@@ -2,7 +2,6 @@ package types
 
 import (
 	"math"
-	"slices"
 )
 
 type Point struct {
@@ -46,11 +45,30 @@ type SamplerPoint struct {
 	Y float64
 }
 
-func lerp(a float64, b float64, f float64) float64 {
+func Lerp(a float64, b float64, f float64) float64 {
 	return a*(1.0-f) + (b * f)
 }
 
+func Lerp2D(p0, p1, t SamplerPoint) SamplerPoint {
+	x := p0.X + (p1.X-p0.X)*t.X
+	y := p0.Y + (p1.Y-p0.Y)*t.Y
+	return SamplerPoint{X: x, Y: y}
+}
+
+func Lerp1DFrom2D(v0, v1 float64, t SamplerPoint) float64 {
+	var in = t.X + t.Y
+	if in > 1 {
+		in = 1
+	}
+	return Lerp(v0, v1, in)
+}
+
 func PointAndSamplerLerp(p1 Point, p2 Point, s1 SamplerPoint, s2 SamplerPoint, in Point) SamplerPoint {
+	// Handle the case where p1 and p2 are the same point
+	if p1.X == p2.X || p1.Y == p2.Y {
+		// If p1 and p2 are the same, just return the sampler point for p1 (which is the same as p2)
+		return s1
+	}
 	// Calculate the ratio of `in` between `p1` and `p2` for both X and Y.
 	// This tells us how far along the line from p1 to p2 the point `in` is.
 	// Convert the ratio into a floating point number.
@@ -59,8 +77,8 @@ func PointAndSamplerLerp(p1 Point, p2 Point, s1 SamplerPoint, s2 SamplerPoint, i
 
 	// Interpolate both the X and Y values of the sampler points using the ratios.
 	// Note: We use the ratio of X to interpolate the X coordinates and the ratio of Y for the Y coordinates.
-	resultX := lerp(s1.X, s2.X, ratioX)
-	resultY := lerp(s1.Y, s2.Y, ratioY)
+	resultX := Lerp(s1.X, s2.X, ratioX)
+	resultY := Lerp(s1.Y, s2.Y, ratioY)
 
 	return SamplerPoint{X: resultX, Y: resultY}
 }
@@ -114,17 +132,37 @@ type Poly struct {
 }
 
 func MakePolySamplerPoints(points []Point) map[Point]SamplerPoint {
-	var max = slices.MaxFunc(points, func(a Point, b Point) int {
-		return int(a.X - b.X + a.Y - b.Y)
-	})
-	var min = slices.MinFunc(points, func(a Point, b Point) int {
-		return int(a.X - b.X + a.Y - b.Y)
-	})
-	var out = make(map[Point]SamplerPoint)
-	for _, p := range points {
-		var p2 = p.Sub(min)
-		var point = p2.DivToSamplerPoint(max)
-		out[p] = point
+	if len(points) == 0 {
+		return nil
 	}
-	return out
+
+	// Find the bounds of the points
+	minPoint := points[0]
+	maxPoint := points[0]
+
+	for _, p := range points {
+		if p.X < minPoint.X {
+			minPoint.X = p.X
+		}
+		if p.Y < minPoint.Y {
+			minPoint.Y = p.Y
+		}
+		if p.X > maxPoint.X {
+			maxPoint.X = p.X
+		}
+		if p.Y > maxPoint.Y {
+			maxPoint.Y = p.Y
+		}
+	}
+
+	// Create a map to hold the SamplerPoints
+	samplerPoints := make(map[Point]SamplerPoint)
+
+	for _, p := range points {
+		// Convert each Point to a SamplerPoint using the bounds
+		samplerPoint := p.DivToSamplerPoint(maxPoint)
+		samplerPoints[p] = samplerPoint
+	}
+
+	return samplerPoints
 }

@@ -35,3 +35,20 @@ type PolyRenderer interface {
 type Sampler interface {
 	GetAtPoint(point types.SamplerPoint) types.PaletteIndex
 }
+
+type Shape3DRenderer interface {
+	StackRenderer
+	GetPolyRenderer() PolyRenderer
+	SetPolyRenderer(pr PolyRenderer)
+	RenderShape(shape Shape3D, cameraPos types.Point3D, cameraRotation types.Rotation3D, sampler Sampler)
+}
+
+type Shape3D interface {
+	GetPoints() []types.Point3D
+	GetSamplerPoints() map[types.Point3D]types.SamplerPoint
+}
+
+type GradientCreator interface {
+	StackRenderer
+	CreateGradient(color1, color2 types.Color, numSteps, startingIndex uint8) types.Gradient
+}

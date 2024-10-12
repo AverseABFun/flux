@@ -2,8 +2,6 @@ package core
 
 import (
 	"fmt"
-	"maps"
-	"slices"
 	"time"
 
 	"github.com/averseabfun/flux/impl"
@@ -34,6 +32,9 @@ func Init(backend interfaces.RawRenderer, provider interfaces.KeyProvider, mProv
 	rawRenderer.SetPaletteColor(0, types.FromRGBNoErr(0, 0, 0))
 	rawRenderer.SetPaletteColor(1, types.FromRGBNoErr(63, 0, 0))
 	rawRenderer.SetPaletteColor(2, types.FromRGBNoErr(0, 63, 0))
+}
+
+func Main() {
 
 	var size = rawRenderer.GetSize()
 
@@ -41,15 +42,13 @@ func Init(backend interfaces.RawRenderer, provider interfaces.KeyProvider, mProv
 	poly.Points = []types.Point{{X: 0, Y: 0}, {X: size.X / 4, Y: size.Y / 4}, {X: size.X / 8, Y: size.Y / 12}, {X: 0, Y: 0}}
 	poly.SamplerPoints = types.MakePolySamplerPoints(poly.Points)
 
-	var sampler = impl.PointSampler{}
-	sampler.SetColor(1)
-	sampler.SetPointColor(2)
-	sampler.SetSamplerPoints(slices.Collect(maps.Values(poly.SamplerPoints)))
+	var gradientCreator = impl.GradientCreator{}
+	gradientCreator.SetParent(rawRenderer)
+
+	var sampler = impl.GradientSampler{}
+	sampler.SetGradient(gradientCreator.CreateGradient(types.FromRGBNoErr(63, 0, 0), types.FromRGBNoErr(0, 0, 63), 100, 1))
 
 	polyRenderer.DrawPoly(&poly, &sampler)
-}
-
-func Main() {
 
 	var renderTime time.Duration
 	var overallRenderTime time.Duration

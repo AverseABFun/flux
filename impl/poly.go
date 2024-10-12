@@ -2,7 +2,6 @@ package impl
 
 import (
 	"cmp"
-	"fmt"
 	"slices"
 
 	"github.com/averseabfun/flux/interfaces"
@@ -85,7 +84,6 @@ func (bp *PolyRenderer) DrawPoly(poly *types.Poly, sampler interfaces.Sampler) {
 			}
 			return cmp.Compare(a.X, b.X)
 		}).X
-		fmt.Println(y, minX, maxX)
 		for x := minX; x < maxX+1; x++ {
 			bp.Parent().DrawBackPixel(x, y, sampler.GetAtPoint(types.WeightedAverageLerp(poly.Points, poly.SamplerPoints, types.Point{X: x, Y: y})))
 		}
