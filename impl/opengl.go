@@ -31,13 +31,14 @@ func (rr *OpenGL) InitRenderer(windowName string, width uint32, height uint32) e
 
 	glfw.WindowHint(glfw.Resizable, glfw.False)
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
-	glfw.WindowHint(glfw.ContextVersionMinor, 6)
+	glfw.WindowHint(glfw.ContextVersionMinor, 5)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.DoubleBuffer, glfw.False)
 
 	window, err := glfw.CreateWindow(int(width)*4, int(height)*4, windowName, nil, nil)
 	if err != nil {
-		rr.DeinitRenderer()
+		glfw.Terminate()
+		rr.shouldClose = true
 		return err
 	}
 	rr.window = window

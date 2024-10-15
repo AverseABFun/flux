@@ -43,6 +43,11 @@ type Shape3DRenderer interface {
 	RenderShape(shape Shape3D, cameraPos types.Point3D, cameraRotation types.Rotation3D, sampler Sampler)
 }
 
+type WolfRenderer interface {
+	StackRenderer
+	RenderWorld(world types.WorldWolf, cameraPos types.Point, cameraRotation types.Degree)
+}
+
 type Shape3D interface {
 	GetPoints() []types.Point3D
 	GetSamplerPoints() map[types.Point3D]types.SamplerPoint

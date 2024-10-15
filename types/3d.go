@@ -1,5 +1,7 @@
 package types
 
+import "math"
+
 type Point3D struct {
 	X float64
 	Y float64
@@ -7,6 +9,11 @@ type Point3D struct {
 }
 
 type Degree float64
+type Radian float64
+
+func (d Degree) ToRadians() Radian {
+	return Radian(d * (math.Pi/180))
+}
 
 type Object3D struct {
 	ID    ObjectID

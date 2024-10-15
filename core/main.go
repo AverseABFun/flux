@@ -15,9 +15,10 @@ var keyProvider interfaces.KeyProvider
 var mouseProvider interfaces.MouseProvider
 var lr interfaces.LineRenderer
 var polyRenderer interfaces.PolyRenderer
+var wolfRenderer interfaces.WolfRenderer
 
-func Init(backend interfaces.RawRenderer, provider interfaces.KeyProvider, mProvider interfaces.MouseProvider) {
-	if err := backend.InitRenderer("test", 320, 200); err != nil {
+func Init(backend interfaces.RawRenderer, provider interfaces.KeyProvider, mProvider interfaces.MouseProvider, windowTitle string) {
+	if err := backend.InitRenderer(windowTitle, 320, 200); err != nil {
 		panic(err)
 	}
 	rawRenderer = backend
@@ -28,6 +29,8 @@ func Init(backend interfaces.RawRenderer, provider interfaces.KeyProvider, mProv
 	polyRenderer = &impl.PolyRenderer{}
 	polyRenderer.SetParent(rawRenderer)
 	polyRenderer.SetLineRenderer(lr)
+	wolfRenderer = &impl.WolfRayMarcher{}
+	wolfRenderer.SetParent(rawRenderer)
 
 	rawRenderer.SetPaletteColor(0, types.FromRGBNoErr(0, 0, 0))
 	rawRenderer.SetPaletteColor(1, types.FromRGBNoErr(63, 0, 0))
@@ -35,20 +38,6 @@ func Init(backend interfaces.RawRenderer, provider interfaces.KeyProvider, mProv
 }
 
 func Main() {
-
-	var size = rawRenderer.GetSize()
-
-	var poly = types.Poly{}
-	poly.Points = []types.Point{{X: 0, Y: 0}, {X: size.X / 4, Y: size.Y / 4}, {X: size.X / 8, Y: size.Y / 12}, {X: 0, Y: 0}}
-	poly.SamplerPoints = types.MakePolySamplerPoints(poly.Points)
-
-	var gradientCreator = impl.GradientCreator{}
-	gradientCreator.SetParent(rawRenderer)
-
-	var sampler = impl.GradientSampler{}
-	sampler.SetGradient(gradientCreator.CreateGradient(types.FromRGBNoErr(63, 0, 0), types.FromRGBNoErr(0, 0, 63), 100, 1))
-
-	polyRenderer.DrawPoly(&poly, &sampler)
 
 	var renderTime time.Duration
 	var overallRenderTime time.Duration
@@ -58,9 +47,16 @@ func Main() {
 	var position = false
 	keyProvider.PushGrabber(&impl.DebugGrabber{ValueToChange: &debug, WhichAction: glfw.Press, Key: glfw.KeyD, Mods: glfw.ModControl})
 	mouseProvider.PushMouseGrabber(&impl.DebugGrabber{ValueToChange: &position, MouseAction: glfw.Press, MouseMods: 0, MouseButton: glfw.MouseButton1})
+	var world, err = impl.ImportWolfWorld("./testWorld.txt")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(world.Objects[1])
+	var rotation types.Degree = 270
 	for !rawRenderer.ShouldQuit() {
 		var t1 = time.Now()
 		rawRenderer.TickRenderer()
+		wolfRenderer.RenderWorld(world, types.Point{X: 0, Y: 0}, rotation)
 		var t2 = time.Now()
 		renderTime += t2.Sub(t1)
 		numSamples++

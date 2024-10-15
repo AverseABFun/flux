@@ -13,6 +13,6 @@ func init() {
 
 func main() {
 	var opengl = &impl.OpenGL{}
-	core.Init(opengl, opengl, opengl)
+	core.Init(opengl, opengl, opengl, "test")
 	core.Main()
 }
